@@ -223,7 +223,7 @@ class NotificationMessageTest(TestCase):
         valid1 = 'n00cchat message00000032{"message":"Hi","from":"nthn","chat_room":"gonuts"}'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, NotificationMessage)
-        self.assertEqual(message.n_type, "chat message")
+        self.assertEqual(message.name, "chat message")
         self.assertEqual(message.payload, '{"message":"Hi","from":"nthn","chat_room":"gonuts"}')
 
     def test_write(self):
@@ -231,7 +231,6 @@ class NotificationMessageTest(TestCase):
         Makes sure our notification serialization is good.
         """
 
-        message = NotificationMessage(
-            n_type="test_type", payload="Hello World")
+        message = NotificationMessage(name="test_name", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'n009test_type0000000bHello World')
+        self.assertEqual(m_bytes, 'n009test_name0000000bHello World')

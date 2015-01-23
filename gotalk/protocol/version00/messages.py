@@ -340,26 +340,26 @@ class NotificationMessage(GotalkMessage):
 
     type_id = NOTIFICATION_TYPE
 
-    def __init__(self, n_type, payload):
-        self.n_type = n_type
+    def __init__(self, name, payload):
+        self.name = name
         self.payload = payload
 
     def to_bytes(self):
-        n_type_size = len(self.n_type)
+        name_size = len(self.name)
         payload_length = self._check_payload_length(self.payload)
-        return "{type_id}{n_type_size:03x}{n_type}{payload_length:08x}{payload}".format(
-            type_id=self.type_id, n_type_size=n_type_size, n_type=self.n_type,
+        return "{type_id}{name_size:03x}{name}{payload_length:08x}{payload}".format(
+            type_id=self.type_id, name_size=name_size, name=self.name,
             payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        n_type, n_type_end = cls._get_n_type_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=n_type_end)
-        return cls(n_type, payload)
+        name, name_end = cls._get_name_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=name_end)
+        return cls(name, payload)
 
     @classmethod
-    def _get_n_type_from_bytes(cls, m_bytes):
-        n_type_length = int(m_bytes[1:4], 16)
-        n_type_end = 4 + n_type_length
-        n_type = m_bytes[4: n_type_end]
-        return n_type, n_type_end
+    def _get_name_from_bytes(cls, m_bytes):
+        name_length = int(m_bytes[1:4], 16)
+        name_end = 4 + name_length
+        name = m_bytes[4: name_end]
+        return name, name_end
