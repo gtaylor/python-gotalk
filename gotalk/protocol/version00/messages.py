@@ -2,6 +2,7 @@
 Version 00 message marshalling/unmarshalling.
 """
 
+from gotalk.exceptions import PayloadTooLongError, OperationTooLongError
 from gotalk.protocol.defines import SINGLE_REQUEST_TYPE, SINGLE_RESULT_TYPE, \
     STREAM_REQUEST_TYPE, STREAM_REQUEST_PART_TYPE, STREAM_RESULT_TYPE, \
     ERROR_RESULT_TYPE, NOTIFICATION_TYPE
@@ -13,24 +14,41 @@ class GotalkMessage(object):
     """
 
     protocol_version = "00"
+    payload_max_length = 4294967295
 
     def _pad_request_id(self, request_id):
         return str(request_id).zfill(3)
+
+    def _check_payload_length(self, payload):
+        payload_length = len(payload)
+        if payload_length > self.payload_max_length:
+            raise PayloadTooLongError(
+                "Payload length limit exceeded. Must be < 4 GB.")
+        return payload_length
 
     @classmethod
     def _get_reguest_id_from_bytes(cls, m_bytes):
         return m_bytes[1:4]
 
     @classmethod
-    def _get_payload_from_bytes(cls, m_bytes, payload_size_start):
-        payload_size_end = payload_size_start + 8
-        return m_bytes[payload_size_end:]
+    def _get_payload_from_bytes(cls, m_bytes, payload_length_start):
+        payload_length_end = payload_length_start + 8
+        return m_bytes[payload_length_end:]
 
 
 class GotalkRequestMessage(GotalkMessage):
     """
     .. tip:: Don't use this class directly!
     """
+
+    operation_max_length = 4095
+
+    def _check_operation_length(self, operation):
+        operation_length = len(operation)
+        if operation_length > self.operation_max_length:
+            raise OperationTooLongError(
+                "Operation length limit exceeded. Must be < 4 KB.")
+        return operation_length
 
     @classmethod
     def _get_operation_from_bytes(cls, m_bytes):
@@ -88,15 +106,15 @@ class SingleRequestMessage(GotalkRequestMessage):
         self.payload = payload
 
     def to_bytes(self):
-        operation_size = len(self.operation)
-        payload_size = len(self.payload)
+        operation_length = self._check_operation_length(self.operation)
+        payload_length = self._check_payload_length(self.payload)
         return "{type_id}{request_id}" \
-               "{operation_size:03d}{operation}" \
-               "{payload_size:08x}{payload}".format(
+               "{operation_length:03d}{operation}" \
+               "{payload_length:08x}{payload}".format(
                 type_id=self.type_id,
                 request_id=self._pad_request_id(self.request_id),
-                operation_size=operation_size, operation=self.operation,
-                payload_size=payload_size, payload=self.payload)
+                operation_length=operation_length, operation=self.operation,
+                payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
@@ -129,16 +147,16 @@ class SingleResultMessage(GotalkResultMessage):
         self.payload = payload
 
     def to_bytes(self):
-        payload_size = len(self.payload)
-        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
+        payload_length = self._check_payload_length(self.payload)
+        return "{type_id}{request_id}{payload_length:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
-            payload_size=payload_size, payload=self.payload)
+            payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
         request_id = cls._get_reguest_id_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=4)
         return cls(request_id, payload)
 
 
@@ -173,15 +191,15 @@ class StreamRequestMessage(GotalkRequestMessage):
         self.payload = payload
 
     def to_bytes(self):
-        operation_size = len(self.operation)
-        payload_size = len(self.payload)
+        operation_length = self._check_operation_length(self.operation)
+        payload_length = self._check_payload_length(self.payload)
         return "{type_id}{request_id}" \
-               "{operation_size:03d}{operation}" \
-               "{payload_size:08x}{payload}".format(
+               "{operation_length:03d}{operation}" \
+               "{payload_length:08x}{payload}".format(
                 type_id=self.type_id,
                 request_id=self._pad_request_id(self.request_id),
-                operation_size=operation_size, operation=self.operation,
-                payload_size=payload_size, payload=self.payload)
+                operation_length=operation_length, operation=self.operation,
+                payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
@@ -214,16 +232,16 @@ class StreamRequestPartMessage(GotalkRequestMessage):
         self.payload = payload
 
     def to_bytes(self):
-        payload_size = len(self.payload)
-        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
+        payload_length = self._check_payload_length(self.payload)
+        return "{type_id}{request_id}{payload_length:08x}{payload}".format(
                 type_id=self.type_id,
                 request_id=self._pad_request_id(self.request_id),
-                payload_size=payload_size, payload=self.payload)
+                payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
         request_id = cls._get_reguest_id_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=4)
         return cls(request_id, payload)
 
 
@@ -250,16 +268,16 @@ class StreamResultMessage(GotalkResultMessage):
         self.payload = payload
 
     def to_bytes(self):
-        payload_size = len(self.payload)
-        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
+        payload_length = self._check_payload_length(self.payload)
+        return "{type_id}{request_id}{payload_length:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
-            payload_size=payload_size, payload=self.payload)
+            payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
         request_id = cls._get_reguest_id_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=4)
         return cls(request_id, payload)
 
 
@@ -286,16 +304,16 @@ class ErrorResultMessage(GotalkResultMessage):
         self.payload = payload
 
     def to_bytes(self):
-        payload_size = len(self.payload)
-        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
+        payload_length = self._check_payload_length(self.payload)
+        return "{type_id}{request_id}{payload_length:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
-            payload_size=payload_size, payload=self.payload)
+            payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
         request_id = cls._get_reguest_id_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=4)
         return cls(request_id, payload)
 
 
@@ -328,15 +346,15 @@ class NotificationMessage(GotalkMessage):
 
     def to_bytes(self):
         n_type_size = len(self.n_type)
-        payload_size = len(self.payload)
-        return "{type_id}{n_type_size:03x}{n_type}{payload_size:08x}{payload}".format(
+        payload_length = self._check_payload_length(self.payload)
+        return "{type_id}{n_type_size:03x}{n_type}{payload_length:08x}{payload}".format(
             type_id=self.type_id, n_type_size=n_type_size, n_type=self.n_type,
-            payload_size=payload_size, payload=self.payload)
+            payload_length=payload_length, payload=self.payload)
 
     @classmethod
     def from_bytes(cls, m_bytes):
         n_type, n_type_end = cls._get_n_type_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=n_type_end)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_length_start=n_type_end)
         return cls(n_type, payload)
 
     @classmethod

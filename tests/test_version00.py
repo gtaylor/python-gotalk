@@ -1,4 +1,5 @@
 from unittest import TestCase
+from gotalk.exceptions import PayloadTooLongError, OperationTooLongError
 
 from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
@@ -29,6 +30,41 @@ class VersionTest(TestCase):
         message = ProtocolVersionMessage()
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, _PROTO_VERSION)
+
+
+class CommonTest(TestCase):
+    """
+    The tests in this case apply to almost every message type.
+    """
+
+    def test_large_payload(self):
+        """
+        Make sure payload length errors are triggering.
+        """
+
+        self.skipTest("See if there's a way to do this without the RAM usage.")
+        valid_payload = "#" * SingleRequestMessage.payload_max_length
+        message = SingleRequestMessage(
+            request_id="001", operation="echo", payload=valid_payload)
+        # This shouldn't raise an error.
+        write_message(message)
+        # Now make it too big.
+        message.payload += "#"
+        self.assertRaises(PayloadTooLongError, write_message, message)
+
+    def test_large_operation(self):
+        """
+        Make sure operation length errors are triggering.
+        """
+
+        valid_operation = "#" * SingleRequestMessage.operation_max_length
+        message = SingleRequestMessage(
+            request_id="001", operation=valid_operation, payload="yay")
+        # This shouldn't raise an error.
+        write_message(message)
+        # Now make it too big (by one).
+        message.operation += "#"
+        self.assertRaises(OperationTooLongError, write_message, message)
 
 
 class SingleRequestMessageTest(TestCase):
