@@ -15,7 +15,7 @@ def get_package_version():
     """
 
     base = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(base, "aphid_agent/__init__.py")) as initf:
+    with open(os.path.join(base, "gotalk/__init__.py")) as initf:
         for line in initf:
             m = version.match(line.strip())
             if not m:
@@ -24,7 +24,7 @@ def get_package_version():
 
 
 def get_requirements(filename):
-    return open(filename).read().splitlines()
+    return open('requirements/' + filename).read().splitlines()
 
 
 classes = """
@@ -45,7 +45,7 @@ classes = """
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
 
-install_requires = get_requirements('requirements.txt')
+install_requires = get_requirements('install.txt')
 if sys.version_info < (3, 0):
     install_requires.append('futures')
 
@@ -63,5 +63,5 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=install_requires,
     test_suite="tests",
-    #tests_require=get_requirements('requirements.txt'),
+    tests_require=get_requirements('test.txt'),
 )
