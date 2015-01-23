@@ -3,7 +3,8 @@ from unittest import TestCase
 from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
 from gotalk.protocol.version00.messages import ProtocolVersionMessage, \
-    SingleRequestMessage, SingleResultMessage, StreamRequestMessage
+    SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
+    StreamRequestPartMessage
 
 
 _PROTO_VERSION = "00"
@@ -101,3 +102,27 @@ class StreamRequestMessageTest(TestCase):
             request_id="001", operation="echo", payload="Hello World")
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, 's001004echo0000000bHello World')
+
+
+class StreamRequestPartMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed stream request part messages.
+        """
+
+        valid1 = 'p0010000000e"Hello World"}'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, StreamRequestPartMessage)
+        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.payload, '"Hello World"}')
+
+    def test_write(self):
+        """
+        Makes sure our stream request serialization is good.
+        """
+
+        message = StreamRequestPartMessage(
+            request_id="001", payload="Hello World")
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'p0010000000bHello World')
