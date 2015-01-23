@@ -14,6 +14,9 @@ class GotalkMessage(object):
 
     protocol_version = "00"
 
+    def _pad_request_id(self, request_id):
+        return str(request_id).zfill(3)
+
     @classmethod
     def _get_reguest_id_from_bytes(cls, m_bytes):
         return m_bytes[1:4]
@@ -25,6 +28,9 @@ class GotalkMessage(object):
 
 
 class GotalkRequestMessage(GotalkMessage):
+    """
+    .. tip:: Don't use this class directly!
+    """
 
     @classmethod
     def _get_operation_from_bytes(cls, m_bytes):
@@ -35,6 +41,10 @@ class GotalkRequestMessage(GotalkMessage):
 
 
 class GotalkResultMessage(GotalkMessage):
+    """
+    .. tip:: Don't use this class directly!
+    """
+
     pass
 
 
@@ -80,10 +90,11 @@ class SingleRequestMessage(GotalkRequestMessage):
     def to_bytes(self):
         operation_size = len(self.operation)
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}" \
+        return "{type_id}{request_id}" \
                "{operation_size:03d}{operation}" \
                "{payload_size:08x}{payload}".format(
-                type_id=self.type_id, request_id=self.request_id,
+                type_id=self.type_id,
+                request_id=self._pad_request_id(self.request_id),
                 operation_size=operation_size, operation=self.operation,
                 payload_size=payload_size, payload=self.payload)
 
@@ -120,7 +131,8 @@ class SingleResultMessage(GotalkResultMessage):
     def to_bytes(self):
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
-            type_id=self.type_id, request_id=self.request_id,
+            type_id=self.type_id,
+            request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
 
     @classmethod
@@ -166,7 +178,8 @@ class StreamRequestMessage(GotalkRequestMessage):
         return "{type_id}{request_id:03d}" \
                "{operation_size:03d}{operation}" \
                "{payload_size:08x}{payload}".format(
-                type_id=self.type_id, request_id=self.request_id,
+                type_id=self.type_id,
+                request_id=self._pad_request_id(self.request_id),
                 operation_size=operation_size, operation=self.operation,
                 payload_size=payload_size, payload=self.payload)
 
@@ -203,7 +216,8 @@ class StreamRequestPartMessage(GotalkRequestMessage):
     def to_bytes(self):
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
-                type_id=self.type_id, request_id=self.request_id,
+                type_id=self.type_id,
+                request_id=self._pad_request_id(self.request_id),
                 payload_size=payload_size, payload=self.payload)
 
     @classmethod
@@ -238,7 +252,8 @@ class StreamResultMessage(GotalkResultMessage):
     def to_bytes(self):
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
-            type_id=self.type_id, request_id=self.request_id,
+            type_id=self.type_id,
+            request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
 
     @classmethod
@@ -273,7 +288,8 @@ class ErrorResultMessage(GotalkResultMessage):
     def to_bytes(self):
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
-            type_id=self.type_id, request_id=self.request_id,
+            type_id=self.type_id,
+            request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
 
     @classmethod

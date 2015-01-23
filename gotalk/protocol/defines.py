@@ -2,6 +2,8 @@
 Constants and other defines.
 """
 
+# Various message type characters. These are the first byte in every message
+# but the initial version exchange.
 SINGLE_REQUEST_TYPE = "r"
 SINGLE_RESULT_TYPE = "R"
 STREAM_REQUEST_TYPE = "s"
