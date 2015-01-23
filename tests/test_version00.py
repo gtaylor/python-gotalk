@@ -4,7 +4,7 @@ from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
 from gotalk.protocol.version00.messages import ProtocolVersionMessage, \
     SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
-    StreamRequestPartMessage
+    StreamRequestPartMessage, StreamResultMessage
 
 
 _PROTO_VERSION = "00"
@@ -126,3 +126,27 @@ class StreamRequestPartMessageTest(TestCase):
             request_id="001", payload="Hello World")
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, 'p0010000000bHello World')
+
+
+class StreamResultMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed stream result messages.
+        """
+
+        valid1 = 'S0010000000b{"message":'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, StreamResultMessage)
+        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.payload, '{"message":')
+
+    def test_write(self):
+        """
+        Makes sure our stream result serialization is good.
+        """
+
+        message = StreamResultMessage(
+            request_id="001", payload="Hello World")
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'S0010000000bHello World')
