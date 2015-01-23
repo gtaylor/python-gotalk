@@ -130,7 +130,7 @@ class SingleResultMessage(GotalkResultMessage):
 
     def to_bytes(self):
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
+        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
@@ -175,7 +175,7 @@ class StreamRequestMessage(GotalkRequestMessage):
     def to_bytes(self):
         operation_size = len(self.operation)
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}" \
+        return "{type_id}{request_id}" \
                "{operation_size:03d}{operation}" \
                "{payload_size:08x}{payload}".format(
                 type_id=self.type_id,
@@ -215,7 +215,7 @@ class StreamRequestPartMessage(GotalkRequestMessage):
 
     def to_bytes(self):
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
+        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
                 type_id=self.type_id,
                 request_id=self._pad_request_id(self.request_id),
                 payload_size=payload_size, payload=self.payload)
@@ -251,7 +251,7 @@ class StreamResultMessage(GotalkResultMessage):
 
     def to_bytes(self):
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
+        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
@@ -287,7 +287,7 @@ class ErrorResultMessage(GotalkResultMessage):
 
     def to_bytes(self):
         payload_size = len(self.payload)
-        return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
+        return "{type_id}{request_id}{payload_size:08x}{payload}".format(
             type_id=self.type_id,
             request_id=self._pad_request_id(self.request_id),
             payload_size=payload_size, payload=self.payload)
