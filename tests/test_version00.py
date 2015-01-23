@@ -3,7 +3,7 @@ from unittest import TestCase
 from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
 from gotalk.protocol.version00.messages import ProtocolVersionMessage, \
-    SingleRequestMessage
+    SingleRequestMessage, SingleResultMessage
 
 
 _PROTO_VERSION = "00"
@@ -33,21 +33,46 @@ class SingleRequestMessageTest(TestCase):
 
     def test_valid_read(self):
         """
-        Tests the reading of some properly formed messages.
+        Tests the reading of properly formed single request messages.
         """
 
         valid1 = 'r001004echo00000019{"message":"Hello World"}'
         message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, SingleRequestMessage)
         self.assertEqual(message.request_id, "001")
         self.assertEqual(message.operation, "echo")
         self.assertEqual(message.payload, '{"message":"Hello World"}')
 
     def test_write(self):
         """
-        Tests writing various writes to make sure our serializtion is good.
+        Makes sure our single request serialization is good.
         """
 
         message = SingleRequestMessage(
             request_id="001", operation="echo", payload="Hello World")
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, 'r001004echo0000000bHello World')
+
+
+class SingleResultMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed single result messages.
+        """
+
+        valid1 = 'R00100000019{"message":"Hello World"}'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, SingleResultMessage)
+        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.payload, '{"message":"Hello World"}')
+
+    def test_write(self):
+        """
+        Makes sure our single result serialization is good.
+        """
+
+        message = SingleResultMessage(
+            request_id="001", payload="Hello World")
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'R0010000000bHello World')
