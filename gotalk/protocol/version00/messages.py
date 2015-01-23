@@ -319,9 +319,9 @@ class ErrorResultMessage(GotalkResultMessage):
 
 class NotificationMessage(GotalkMessage):
     """
-    Notification    = "n" type payload
+    Notification    = "n" name payload
 
-    type            = text3
+    name            = text3
     payload         = payloadSize payloadData?
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
@@ -332,7 +332,7 @@ class NotificationMessage(GotalkMessage):
 
     +---------------------- Notification
     |  +--------------------- text3Size   12
-    |  |           +--------- type        "chat message"
+    |  |           +--------- name        "chat message"
     |  |           |       +- payloadSize 50
     |  |           |       |
     n00cchat message00000032{"message":"Hi","from":"nthn","chat_room":"gonuts"}
