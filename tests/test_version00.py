@@ -4,7 +4,8 @@ from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
 from gotalk.protocol.version00.messages import ProtocolVersionMessage, \
     SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
-    StreamRequestPartMessage, StreamResultMessage, ErrorResultMessage
+    StreamRequestPartMessage, StreamResultMessage, ErrorResultMessage, \
+    NotificationMessage
 
 
 _PROTO_VERSION = "00"
@@ -174,3 +175,27 @@ class ErrorResultMessageTest(TestCase):
             request_id="001", payload="Hello World")
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, 'E0010000000bHello World')
+
+
+class NotificationMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed notification messages.
+        """
+
+        valid1 = 'n00cchat message00000032{"message":"Hi","from":"nthn","chat_room":"gonuts"}'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, NotificationMessage)
+        self.assertEqual(message.n_type, "chat message")
+        self.assertEqual(message.payload, '{"message":"Hi","from":"nthn","chat_room":"gonuts"}')
+
+    def test_write(self):
+        """
+        Makes sure our notification serialization is good.
+        """
+
+        message = NotificationMessage(
+            n_type="test_type", payload="Hello World")
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'n009test_type0000000bHello World')

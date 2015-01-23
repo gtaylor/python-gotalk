@@ -335,8 +335,8 @@ class NotificationMessage(GotalkMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        n_type = cls._get_n_type_from_bytes(m_bytes)
-        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        n_type, n_type_end = cls._get_n_type_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=n_type_end)
         return cls(n_type, payload)
 
     @classmethod
