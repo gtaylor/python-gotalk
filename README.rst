@@ -20,4 +20,4 @@ License
 This project, and all contributed code, are licensed under the BSD License.
 A copy of the BSD License may be found in the repository.
 
-.. _Gotalk: http://rsms.me/2015/01/21/gotalk.html
+.. _Gotalk: https://github.com/rsms/gotalk
