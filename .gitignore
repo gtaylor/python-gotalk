@@ -1,4 +1,5 @@
 .idea
+.eggs
 *.pyc
 *.swp
 *.tmp
