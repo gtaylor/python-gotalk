@@ -12,6 +12,8 @@ class GotalkMessage(object):
     .. tip:: Don't use this class directly!
     """
 
+    protocol_version = "00"
+
     @classmethod
     def _get_reguest_id_from_bytes(cls, m_bytes):
         return m_bytes[1:4]
@@ -41,10 +43,8 @@ class ProtocolVersionMessage(GotalkMessage):
     ProtocolVersion = <hexdigit> <hexdigit>
     """
 
-    version = "00"
-
     def to_bytes(self):
-        return self.version
+        return self.protocol_version
 
 
 class SingleRequestMessage(GotalkRequestMessage):
