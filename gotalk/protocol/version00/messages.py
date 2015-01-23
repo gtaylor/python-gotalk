@@ -9,17 +9,27 @@ from gotalk.protocol.defines import SINGLE_REQUEST_TYPE, SINGLE_RESULT_TYPE, \
 
 class GotalkMessage(object):
     """
-    Doesn't do anything for now. We'll just set a common ancestor for the
-    user's benefit.
-
     .. tip:: Don't use this class directly!
     """
 
-    pass
+    @classmethod
+    def _get_reguest_id_from_bytes(cls, m_bytes):
+        return m_bytes[1:4]
+
+    @classmethod
+    def _get_payload_from_bytes(cls, m_bytes, payload_size_start):
+        payload_size_end = payload_size_start + 8
+        return m_bytes[payload_size_end:]
 
 
 class GotalkRequestMessage(GotalkMessage):
-    pass
+
+    @classmethod
+    def _get_operation_from_bytes(cls, m_bytes):
+        operation_length = int(m_bytes[4:7], 16)
+        operation_end = 7 + operation_length
+        operation = m_bytes[7: operation_end]
+        return operation, operation_end
 
 
 class GotalkResultMessage(GotalkMessage):
@@ -47,6 +57,10 @@ class SingleRequestMessage(GotalkRequestMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
 
+    text3           = text3Size text3Value
+    text3Size       = hexUInt3
+    text3Value      = <<byte>{text3Size} as utf8 text>
+
     +----------------- SingleRequest
     |  +---------------- requestID   "001"
     |  |  +------------- text3Size   4
@@ -64,23 +78,20 @@ class SingleRequestMessage(GotalkRequestMessage):
         self.payload = payload
 
     def to_bytes(self):
-        text3_size = len(self.operation)
+        operation_size = len(self.operation)
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}" \
-               "{text3_size:03d}{operation}" \
+               "{operation_size:03d}{operation}" \
                "{payload_size:08x}{payload}".format(
                 type_id=self.type_id, request_id=self.request_id,
-                text3_size=text3_size, operation=self.operation,
+                operation_size=operation_size, operation=self.operation,
                 payload_size=payload_size, payload=self.payload)
 
     @classmethod
-    def from_bytes(cls, bytes):
-        request_id = bytes[1:4]
-        operation_length = int(bytes[4:7])
-        operation_end = 7 + operation_length
-        operation = bytes[7: operation_end]
-        payload_size_end = operation_end + 8
-        payload = bytes[payload_size_end:]
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        operation, operation_end = cls._get_operation_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, operation_end)
         return cls(request_id, operation, payload)
 
 
@@ -112,6 +123,12 @@ class SingleResultMessage(GotalkResultMessage):
             type_id=self.type_id, request_id=self.request_id,
             payload_size=payload_size, payload=self.payload)
 
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        return cls(request_id, payload)
+
 
 class StreamRequestMessage(GotalkRequestMessage):
     """
@@ -123,6 +140,10 @@ class StreamRequestMessage(GotalkRequestMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
     StreamReqPart   = "p" requestID payload
+
+    text3           = text3Size text3Value
+    text3Size       = hexUInt3
+    text3Value      = <<byte>{text3Size} as utf8 text>
 
     +----------------- StreamRequest
     |  +---------------- requestID   "001"
@@ -140,14 +161,21 @@ class StreamRequestMessage(GotalkRequestMessage):
         self.payload = payload
 
     def to_bytes(self):
-        text3_size = len(self.operation)
+        operation_size = len(self.operation)
         payload_size = len(self.payload)
         return "{type_id}{request_id:03d}" \
-               "{text3_size:03d}{operation}" \
+               "{operation_size:03d}{operation}" \
                "{payload_size:08x}{payload}".format(
                 type_id=self.type_id, request_id=self.request_id,
-                text3_size=text3_size, operation=self.operation,
+                operation_size=operation_size, operation=self.operation,
                 payload_size=payload_size, payload=self.payload)
+
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        operation, operation_end = cls._get_operation_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, operation_end)
+        return cls(request_id, operation, payload)
 
 
 class StreamRequestPartMessage(GotalkRequestMessage):
@@ -178,6 +206,12 @@ class StreamRequestPartMessage(GotalkRequestMessage):
                 type_id=self.type_id, request_id=self.request_id,
                 payload_size=payload_size, payload=self.payload)
 
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        return cls(request_id, payload)
+
 
 class StreamResultMessage(GotalkResultMessage):
     """
@@ -206,6 +240,12 @@ class StreamResultMessage(GotalkResultMessage):
         return "{type_id}{request_id:03d}{payload_size:08x}{payload}".format(
             type_id=self.type_id, request_id=self.request_id,
             payload_size=payload_size, payload=self.payload)
+
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        return cls(request_id, payload)
 
 
 class ErrorResultMessage(GotalkResultMessage):
@@ -236,6 +276,12 @@ class ErrorResultMessage(GotalkResultMessage):
             type_id=self.type_id, request_id=self.request_id,
             payload_size=payload_size, payload=self.payload)
 
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        return cls(request_id, payload)
+
 
 class NotificationMessage(GotalkMessage):
     """
@@ -246,10 +292,15 @@ class NotificationMessage(GotalkMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
 
+    text3           = text3Size text3Value
+    text3Size       = hexUInt3
+    text3Value      = <<byte>{text3Size} as utf8 text>
+
     +---------------------- Notification
-    |              +--------- type        "chat message"
-    |              |       +- payloadSize 50
-    |              |       |
+    |  +--------------------- text3Size   12
+    |  |           +--------- type        "chat message"
+    |  |           |       +- payloadSize 50
+    |  |           |       |
     n00cchat message00000032{"message":"Hi","from":"nthn","chat_room":"gonuts"}
     """
 
@@ -260,7 +311,21 @@ class NotificationMessage(GotalkMessage):
         self.payload = payload
 
     def to_bytes(self):
+        n_type_size = len(self.n_type)
         payload_size = len(self.payload)
-        return "{type_id}{n_type}{payload_size:08x}{payload}".format(
-            type_id=self.type_id, n_type=self.n_type,
+        return "{type_id}{n_type_size:03x}{n_type}{payload_size:08x}{payload}".format(
+            type_id=self.type_id, n_type_size=n_type_size, n_type=self.n_type,
             payload_size=payload_size, payload=self.payload)
+
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        n_type = cls._get_n_type_from_bytes(m_bytes)
+        payload = cls._get_payload_from_bytes(m_bytes, payload_size_start=4)
+        return cls(n_type, payload)
+
+    @classmethod
+    def _get_n_type_from_bytes(cls, m_bytes):
+        n_type_length = int(m_bytes[1:4], 16)
+        n_type_end = 4 + n_type_length
+        n_type = m_bytes[4: n_type_end]
+        return n_type, n_type_end
