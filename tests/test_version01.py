@@ -6,7 +6,7 @@ from gotalk.protocol.messages import read_version_message, write_message, \
 from gotalk.protocol.version01.messages import ProtocolVersionMessage, \
     SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
     StreamRequestPartMessage, StreamResultMessage, ErrorResultMessage, \
-    NotificationMessage
+    NotificationMessage, RetryResultMessage
 
 
 _PROTO_VERSION = "01"
@@ -211,6 +211,30 @@ class ErrorResultMessageTest(TestCase):
             request_id="0001", payload="Hello World")
         m_bytes = write_message(message)
         self.assertEqual(m_bytes, 'E00010000000bHello World')
+
+
+class RetryResultMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed retry result messages.
+        """
+
+        valid1 = 'e00010000000000000014"service restarting"'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, RetryResultMessage)
+        self.assertEqual(message.request_id, "0001")
+        self.assertEqual(message.payload, '"service restarting"')
+
+    def test_write(self):
+        """
+        Makes sure our error result serialization is good.
+        """
+
+        message = RetryResultMessage(
+            request_id="0001", wait=0, payload='"service restarting"')
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'e00010000000000000014"service restarting"')
 
 
 class NotificationMessageTest(TestCase):

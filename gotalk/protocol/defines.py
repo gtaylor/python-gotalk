@@ -10,6 +10,7 @@ STREAM_REQUEST_TYPE = "s"
 STREAM_REQUEST_PART_TYPE = "p"
 STREAM_RESULT_TYPE = "S"
 ERROR_RESULT_TYPE = "E"
+RETRY_RESULT_TYPE = "e"
 NOTIFICATION_TYPE = "n"
 
 # Maps the single-character message type ID to some standardized class names
@@ -21,5 +22,6 @@ MESSAGE_TYPE_TO_CLASS_MAP = {
     STREAM_REQUEST_PART_TYPE: 'StreamRequestPartMessage',
     STREAM_RESULT_TYPE: 'StreamResultMessage',
     ERROR_RESULT_TYPE: 'ErrorResultMessage',
+    RETRY_RESULT_TYPE: 'RetryResultMessage',
     NOTIFICATION_TYPE: 'NotificationMessage',
 }
