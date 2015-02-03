@@ -4,11 +4,11 @@ The top-level API for Gotalk message marshalling/unmarshalling.
 
 from gotalk.exceptions import InvalidMessageTypeIDError, \
     InvalidProtocolVersionError
-from gotalk.protocol import version00
+from gotalk.protocol import version01
 from gotalk.protocol.defines import MESSAGE_TYPE_TO_CLASS_MAP
 
 PROTOCOL_VERSION_MAP = {
-    "00": version00,
+    "01": version01,
 }
 
 

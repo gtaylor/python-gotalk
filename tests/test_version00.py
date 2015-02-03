@@ -3,13 +3,13 @@ from gotalk.exceptions import PayloadTooLongError, OperationTooLongError
 
 from gotalk.protocol.messages import read_version_message, write_message, \
     read_message
-from gotalk.protocol.version00.messages import ProtocolVersionMessage, \
+from gotalk.protocol.version01.messages import ProtocolVersionMessage, \
     SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
     StreamRequestPartMessage, StreamResultMessage, ErrorResultMessage, \
     NotificationMessage
 
 
-_PROTO_VERSION = "00"
+_PROTO_VERSION = "01"
 
 
 class VersionTest(TestCase):
@@ -45,7 +45,7 @@ class CommonTest(TestCase):
         self.skipTest("See if there's a way to do this without the RAM usage.")
         valid_payload = "#" * SingleRequestMessage.payload_max_length
         message = SingleRequestMessage(
-            request_id="001", operation="echo", payload=valid_payload)
+            request_id="0001", operation="echo", payload=valid_payload)
         # This shouldn't raise an error.
         write_message(message)
         # Now make it too big.
@@ -59,7 +59,7 @@ class CommonTest(TestCase):
 
         valid_operation = "#" * SingleRequestMessage.operation_max_length
         message = SingleRequestMessage(
-            request_id="001", operation=valid_operation, payload="yay")
+            request_id="0001", operation=valid_operation, payload="yay")
         # This shouldn't raise an error.
         write_message(message)
         # Now make it too big (by one).
@@ -74,10 +74,10 @@ class SingleRequestMessageTest(TestCase):
         Tests the reading of properly formed single request messages.
         """
 
-        valid1 = 'r001004echo00000019{"message":"Hello World"}'
+        valid1 = 'r0001004echo00000019{"message":"Hello World"}'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, SingleRequestMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.operation, "echo")
         self.assertEqual(message.payload, '{"message":"Hello World"}')
 
@@ -87,9 +87,9 @@ class SingleRequestMessageTest(TestCase):
         """
 
         message = SingleRequestMessage(
-            request_id="001", operation="echo", payload="Hello World")
+            request_id="0001", operation="echo", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'r001004echo0000000bHello World')
+        self.assertEqual(m_bytes, 'r0001004echo0000000bHello World')
 
 
 class SingleResultMessageTest(TestCase):
@@ -99,10 +99,10 @@ class SingleResultMessageTest(TestCase):
         Tests the reading of properly formed single result messages.
         """
 
-        valid1 = 'R00100000019{"message":"Hello World"}'
+        valid1 = 'R000100000019{"message":"Hello World"}'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, SingleResultMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.payload, '{"message":"Hello World"}')
 
     def test_write(self):
@@ -111,9 +111,9 @@ class SingleResultMessageTest(TestCase):
         """
 
         message = SingleResultMessage(
-            request_id="001", payload="Hello World")
+            request_id="0001", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'R0010000000bHello World')
+        self.assertEqual(m_bytes, 'R00010000000bHello World')
 
 
 class StreamRequestMessageTest(TestCase):
@@ -123,10 +123,10 @@ class StreamRequestMessageTest(TestCase):
         Tests the reading of properly formed stream request messages.
         """
 
-        valid1 = 's001004echo0000000b{"message":'
+        valid1 = 's0001004echo0000000b{"message":'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, StreamRequestMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.operation, "echo")
         self.assertEqual(message.payload, '{"message":')
 
@@ -136,9 +136,9 @@ class StreamRequestMessageTest(TestCase):
         """
 
         message = StreamRequestMessage(
-            request_id="001", operation="echo", payload="Hello World")
+            request_id="0001", operation="echo", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 's001004echo0000000bHello World')
+        self.assertEqual(m_bytes, 's0001004echo0000000bHello World')
 
 
 class StreamRequestPartMessageTest(TestCase):
@@ -148,10 +148,10 @@ class StreamRequestPartMessageTest(TestCase):
         Tests the reading of properly formed stream request part messages.
         """
 
-        valid1 = 'p0010000000e"Hello World"}'
+        valid1 = 'p00010000000e"Hello World"}'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, StreamRequestPartMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.payload, '"Hello World"}')
 
     def test_write(self):
@@ -160,9 +160,9 @@ class StreamRequestPartMessageTest(TestCase):
         """
 
         message = StreamRequestPartMessage(
-            request_id="001", payload="Hello World")
+            request_id="0001", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'p0010000000bHello World')
+        self.assertEqual(m_bytes, 'p00010000000bHello World')
 
 
 class StreamResultMessageTest(TestCase):
@@ -172,10 +172,10 @@ class StreamResultMessageTest(TestCase):
         Tests the reading of properly formed stream result messages.
         """
 
-        valid1 = 'S0010000000b{"message":'
+        valid1 = 'S00010000000b{"message":'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, StreamResultMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.payload, '{"message":')
 
     def test_write(self):
@@ -184,9 +184,9 @@ class StreamResultMessageTest(TestCase):
         """
 
         message = StreamResultMessage(
-            request_id="001", payload="Hello World")
+            request_id="0001", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'S0010000000bHello World')
+        self.assertEqual(m_bytes, 'S00010000000bHello World')
 
 
 class ErrorResultMessageTest(TestCase):
@@ -196,10 +196,10 @@ class ErrorResultMessageTest(TestCase):
         Tests the reading of properly formed error result messages.
         """
 
-        valid1 = 'E00100000026{"error":"Unknown operation \"echo\""}'
+        valid1 = 'E000100000026{"error":"Unknown operation \"echo\""}'
         message = read_message(valid1, _PROTO_VERSION)
         self.assertIsInstance(message, ErrorResultMessage)
-        self.assertEqual(message.request_id, "001")
+        self.assertEqual(message.request_id, "0001")
         self.assertEqual(message.payload, '{"error":"Unknown operation \"echo\""}')
 
     def test_write(self):
@@ -208,9 +208,9 @@ class ErrorResultMessageTest(TestCase):
         """
 
         message = ErrorResultMessage(
-            request_id="001", payload="Hello World")
+            request_id="0001", payload="Hello World")
         m_bytes = write_message(message)
-        self.assertEqual(m_bytes, 'E0010000000bHello World')
+        self.assertEqual(m_bytes, 'E00010000000bHello World')
 
 
 class NotificationMessageTest(TestCase):
