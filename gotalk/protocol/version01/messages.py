@@ -31,7 +31,7 @@ class GotalkMessage(object):
         return payload_length
 
     @classmethod
-    def _get_reguest_id_from_bytes(cls, m_bytes):
+    def _get_request_id_from_bytes(cls, m_bytes):
         return m_bytes[cls._request_id_start:cls._request_id_end]
 
     @classmethod
@@ -159,7 +159,7 @@ class SingleRequestMessage(GotalkRequestMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         operation, operation_end = cls._get_operation_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(m_bytes, operation_end)
         return cls(request_id, operation, payload)
@@ -196,7 +196,7 @@ class SingleResultMessage(GotalkResultMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(
             m_bytes, payload_length_start=cls._request_id_end)
         return cls(request_id, payload)
@@ -245,7 +245,7 @@ class StreamRequestMessage(GotalkRequestMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         operation, operation_end = cls._get_operation_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(m_bytes, operation_end)
         return cls(request_id, operation, payload)
@@ -282,7 +282,7 @@ class StreamRequestPartMessage(GotalkRequestMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(
             m_bytes, payload_length_start=cls._request_id_end)
         return cls(request_id, payload)
@@ -319,7 +319,7 @@ class StreamResultMessage(GotalkResultMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(
             m_bytes, payload_length_start=cls._request_id_end)
         return cls(request_id, payload)
@@ -356,7 +356,7 @@ class ErrorResultMessage(GotalkResultMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(
             m_bytes, payload_length_start=cls._request_id_end)
         return cls(request_id, payload)
@@ -401,7 +401,7 @@ class RetryResultMessage(GotalkResultMessage):
 
     @classmethod
     def from_bytes(cls, m_bytes):
-        request_id = cls._get_reguest_id_from_bytes(m_bytes)
+        request_id = cls._get_request_id_from_bytes(m_bytes)
         wait = cls._get_wait_from_bytes(m_bytes)
         payload = cls._get_payload_from_bytes(
             m_bytes, payload_length_start=cls._wait_end)
