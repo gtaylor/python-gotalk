@@ -5,7 +5,7 @@ Version 00 message marshalling/unmarshalling.
 from gotalk.exceptions import PayloadTooLongError, OperationTooLongError
 from gotalk.protocol.defines import SINGLE_REQUEST_TYPE, SINGLE_RESULT_TYPE, \
     STREAM_REQUEST_TYPE, STREAM_REQUEST_PART_TYPE, STREAM_RESULT_TYPE, \
-    ERROR_RESULT_TYPE, NOTIFICATION_TYPE, RETRY_RESULT_TYPE
+    ERROR_RESULT_TYPE, NOTIFICATION_TYPE, RETRY_RESULT_TYPE, PROTOCOL_ERROR_TYPE
 
 
 class GotalkMessage(object):
@@ -82,6 +82,38 @@ class ProtocolVersionMessage(GotalkMessage):
 
     def to_bytes(self):
         return self.protocol_version
+
+
+class ProtocolErrorMessage(GotalkMessage):
+    """
+    ProtocolError   = "f" code
+
+    code            = hexUInt8
+
+    +---------------------- Protocol Error
+    | +--------------------- code   1
+    | |
+    | |
+    | |
+    f00000001
+    """
+
+    type_id = PROTOCOL_ERROR_TYPE
+
+    _code_bytes = 8
+    _code_start = 1
+    _code_end = _code_start + _code_bytes
+
+    def __init__(self, code):
+        self.code = code
+
+    def to_bytes(self):
+        return "{type_id}{code:08x}".format(type_id=self.type_id, code=self.code)
+
+    @classmethod
+    def from_bytes(cls, m_bytes):
+        code = int(m_bytes[cls._code_start:cls._code_end], 16)
+        return cls(code)
 
 
 class SingleRequestMessage(GotalkRequestMessage):

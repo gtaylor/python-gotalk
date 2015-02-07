@@ -6,7 +6,7 @@ from gotalk.protocol.messages import read_version_message, write_message, \
 from gotalk.protocol.version01.messages import ProtocolVersionMessage, \
     SingleRequestMessage, SingleResultMessage, StreamRequestMessage, \
     StreamRequestPartMessage, StreamResultMessage, ErrorResultMessage, \
-    NotificationMessage, RetryResultMessage
+    NotificationMessage, RetryResultMessage, ProtocolErrorMessage
 
 
 _PROTO_VERSION = "01"
@@ -65,6 +65,28 @@ class CommonTest(TestCase):
         # Now make it too big (by one).
         message.operation += "#"
         self.assertRaises(OperationTooLongError, write_message, message)
+
+
+class ProtocolErrorMessageTest(TestCase):
+
+    def test_valid_read(self):
+        """
+        Tests the reading of properly formed single request messages.
+        """
+
+        valid1 = 'f00000001'
+        message = read_message(valid1, _PROTO_VERSION)
+        self.assertIsInstance(message, ProtocolErrorMessage)
+        self.assertEqual(message.code, 1)
+
+    def test_write(self):
+        """
+        Makes sure our single request serialization is good.
+        """
+
+        message = ProtocolErrorMessage(code=1)
+        m_bytes = write_message(message)
+        self.assertEqual(m_bytes, 'f00000001')
 
 
 class SingleRequestMessageTest(TestCase):

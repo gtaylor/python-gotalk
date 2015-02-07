@@ -1,4 +1,5 @@
 from . messages import GotalkMessage, GotalkRequestMessage, GotalkResultMessage, \
     ProtocolVersionMessage, SingleRequestMessage, SingleResultMessage, \
     StreamRequestMessage, StreamRequestPartMessage, StreamResultMessage, \
-    ErrorResultMessage, RetryResultMessage, NotificationMessage
+    ErrorResultMessage, RetryResultMessage, NotificationMessage, \
+    ProtocolErrorMessage
