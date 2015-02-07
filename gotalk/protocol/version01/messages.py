@@ -90,11 +90,16 @@ class ProtocolErrorMessage(GotalkMessage):
 
     code            = hexUInt8
 
+    Code values
+    -----------
+    1 Unsupported protocol version
+    2 Invalid message
+
     +---------------------- Protocol Error
-    | +--------------------- code   1
-    | |
-    | |
-    | |
+    |       +---------------- code   1
+    |       |
+    |       |
+    |       |
     f00000001
     """
 
@@ -130,12 +135,12 @@ class SingleRequestMessage(GotalkRequestMessage):
     text3Size       = hexUInt3
     text3Value      = <<byte>{text3Size} as utf8 text>
 
-    +----------------- SingleRequest
-    |  +---------------- requestID   "0001"
-    |  |  +------------- text3Size   4
-    |  |  |   +--------- operation   "echo"
-    |  |  |   |       +- payloadSize 25
-    |  |  |   |       |
+    +------------------ SingleRequest
+    |   +---------------- requestID   "0001"
+    |   |  +------------- text3Size   4
+    |   |  |   +--------- operation   "echo"
+    |   |  |   |       +- payloadSize 25
+    |   |  |   |       |
     r0001004echo00000019{"message":"Hello World"}
     """
 
@@ -175,9 +180,9 @@ class SingleResultMessage(GotalkResultMessage):
     payloadData     = <byte>{payloadSize}
 
     +----------------- SingleResult
-    |  +---------------- requestID   "0001"
-    |  |       +-------- payloadSize 25
-    |  |       |
+    |   +--------------- requestID   "0001"
+    |   |       +------- payloadSize 25
+    |   |       |
     R000100000019{"message":"Hello World"}
     """
 
@@ -217,11 +222,11 @@ class StreamRequestMessage(GotalkRequestMessage):
     text3Size       = hexUInt3
     text3Value      = <<byte>{text3Size} as utf8 text>
 
-    +----------------- StreamRequest
-    |  +---------------- requestID   "0001"
-    |  |      +--------- operation   "echo"
-    |  |      |       +- payloadSize 25
-    |  |      |       |
+    +------------------ StreamRequest
+    |   +---------------- requestID   "0001"
+    |   |      +--------- operation   "echo" (text3Size 4, text3Value "echo")
+    |   |      |       +- payloadSize 25
+    |   |      |       |
     s0001004echo0000000b{"message":
     """
 
@@ -260,10 +265,10 @@ class StreamRequestPartMessage(GotalkRequestMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
 
-    +----------------- streamReqPart
-    |  +---------------- requestID   "0001"
-    |  |       +-------- payloadSize 25
-    |  |       |
+    +------------------ streamReqPart
+    |   +---------------- requestID   "0001"
+    |   |       +-------- payloadSize 25
+    |   |       |
     p00010000000e"Hello World"}
     """
 
@@ -297,10 +302,10 @@ class StreamResultMessage(GotalkResultMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
 
-    +----------------- StreamResult (1st part)
-    |  +---------------- requestID   "0001"
-    |  |       +-------- payloadSize 25
-    |  |       |
+    +------------------ StreamResult (1st part)
+    |   +---------------- requestID   "0001"
+    |   |       +-------- payloadSize 25
+    |   |       |
     S00010000000b{"message":
     """
 
@@ -334,10 +339,10 @@ class ErrorResultMessage(GotalkResultMessage):
     payloadSize     = hexUInt8
     payloadData     = <byte>{payloadSize}
 
-    +----------------- ErrorResult
-    |  +---------------- requestID   "0001"
-    |  |       +-------- payloadSize 38
-    |  |       |
+    +------------------ ErrorResult
+    |   +---------------- requestID   "0001"
+    |   |       +-------- payloadSize 38
+    |   |       |
     E000100000026{"error":"Unknown operation \"echo\""}
     """
 
