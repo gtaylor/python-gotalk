@@ -3,7 +3,7 @@ python-gotalk
 
 :Author: Greg Taylor
 :License: BSD
-:Status: Early development
+:Status: Early development, Stalled (gotalk dev itself seems to have ceased)
 :Gotalk Version: 01
 
 python-gotalk aspires to be a Python implementation of the Gotalk_ protocol.
